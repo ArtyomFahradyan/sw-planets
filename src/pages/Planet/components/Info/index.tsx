@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   List,
   ListItem,
@@ -11,11 +11,14 @@ import {
 import { Planet } from "../../../../types";
 
 type Props = {
-  planet: Planet;
+  planet?: Planet;
 };
 
 function Info({ planet }: Props) {
-  const list = Object.entries(planet);
+  if (!planet) return null;
+
+  const list = useMemo(() => Object.entries(planet), [planet]);
+
   return (
     <Box sx={{ minWidth: 275, boxShadow: 3 }}>
       <Card>

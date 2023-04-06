@@ -1,4 +1,4 @@
-import React, { FC } from "react";
+import React, { FC, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { Typography } from "@mui/material";
 import {
@@ -47,53 +47,51 @@ function GridList({
   const cache = React.useRef(
     new CellMeasurerCache({
       fixedWidth: true,
-      defaultHeight: 100,
+      defaultHeight: ROW_HEIGHT,
     })
   );
-  const cellRenderer = ({
-    key,
-    rowIndex,
-    columnIndex,
-    parent,
-    style,
-  }: GridCellProps) => {
-    let content;
 
-    if (rowIndex < res.length - 1) {
-      const cellStyle = Object.assign({}, style, {
-        backgroundColor: rowIndex % 2 ? "#eee" : null,
-      });
-      const values: (string | string[])[] = Object.values(res[rowIndex]);
-      content = (
-        <Cell
-          onClick={() => navigate(`/planets/${rowIndex}`)}
-          style={cellStyle}
+  const cellRenderer = useCallback(
+    ({ key, rowIndex, columnIndex, parent, style }: GridCellProps) => {
+      let content;
+
+      if (rowIndex < res.length - 1) {
+        const cellStyle = Object.assign({}, style, {
+          backgroundColor: rowIndex % 2 ? "#eee" : null,
+        });
+        const values: (string | string[])[] = Object.values(res[rowIndex]);
+        content = (
+          <Cell
+            onClick={() => navigate(`/planets/${rowIndex}`)}
+            style={cellStyle}
+          >
+            <div>
+              <Typography>{values[columnIndex]}</Typography>
+            </div>
+          </Cell>
+        );
+      }
+
+      return (
+        <CellMeasurer
+          key={key}
+          cache={cache.current}
+          parent={parent}
+          columnIndex={columnIndex}
+          rowIndex={rowIndex}
         >
-          <div>
-            <Typography>{values[columnIndex]}</Typography>
-          </div>
-        </Cell>
+          {content}
+        </CellMeasurer>
       );
-    }
+    },
+    [JSON.stringify(res), cache.current]
+  );
 
-    return (
-      <CellMeasurer
-        key={key}
-        cache={cache.current}
-        parent={parent}
-        columnIndex={columnIndex}
-        rowIndex={rowIndex}
-      >
-        {content}
-      </CellMeasurer>
-    );
-  };
-
-  const onResize = ({ width }: { width: number }) => {
+  const onResize = useCallback(({ width }: { width: number }) => {
     setColumnWidth((width - 30) / COLUMNS_COUNT);
     cache.current.clearAll();
     grid.current.recomputeGridSize();
-  };
+  }, []);
 
   const onSectionRendered = ({ rowStopIndex }: SectionRenderedParams) => {
     if (rowStopIndex === res.length && dataCount && !isLoading) {

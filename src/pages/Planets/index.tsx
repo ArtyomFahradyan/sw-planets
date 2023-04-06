@@ -35,7 +35,8 @@ function Planets() {
 
   const changePage = () => {
     const count = data?.count || 0;
-    if (page === count / 10) return;
+    const resCount = data?.results?.length || 10;
+    if (page === count / resCount) return;
     setPage(page + 1);
   };
 
